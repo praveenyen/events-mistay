@@ -24,7 +24,7 @@ SECRET_KEY = '+en*71#np4pjeqa82+3-*axs=^b6^s-egtc^pd(qq#51ce^sut'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://mistay-events.herokuapp.com/']
 
 # Application definition
 
