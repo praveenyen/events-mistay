@@ -1,11 +1,14 @@
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from .views import EventAPIView, InvitationAPIView, RegisteredAPIView,\
-    InvitationDetailsView, EventCreateAPIView, RegisterEventAPIView
+from .views import MyEventsAPIView, InvitationAPIView, RegisteredAPIView, \
+    InvitationDetailsView, EventCreateAPIView, RegisterEventAPIView,\
+    UserRegistration, PublicEventsAPIView
 
 urlpatterns = [
-    url(r'^events/$', EventAPIView.as_view()),
+    url(r'^events/public/$', PublicEventsAPIView.as_view()),
+    url(r'^my/events/$', MyEventsAPIView.as_view()),
+    url(r'^user/register', UserRegistration.as_view()),
     url(r'^events/register/$', RegisterEventAPIView.as_view()),
     url(r'^events/create/$', EventCreateAPIView.as_view()),
     url(r'invitations/(?P<pk>.*)/$', InvitationDetailsView.as_view()),

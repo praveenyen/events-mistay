@@ -24,7 +24,9 @@ SECRET_KEY = '+en*71#np4pjeqa82+3-*axs=^b6^s-egtc^pd(qq#51ce^sut'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://mistay-events.herokuapp.com/', 'mistay-events.herokuapp.com', '0.0.0.0:80', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'https://mistay-events.herokuapp.com/', 'mistay-events.herokuapp.com',
+    '0.0.0.0:80', '127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
 
     # Local Apps,
     'conference',
+    'account',
 
     # Third Party
     'rest_framework'
@@ -120,14 +123,22 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Rest api Global Setting start
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication'
+        # 'rest_framework.authentication.SessionAuthentication'
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated'
     )
 }
+
+JWT_AUTH = {
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'account.api.utils.jwt_response_payload_handler'
+}
+# Rest api Global Setting End
+
 PROJECT_ROOT = os.path.join(os.path.abspath(__file__))
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 
