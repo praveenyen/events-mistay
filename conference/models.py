@@ -22,10 +22,10 @@ class RegisterEvent(models.Model):
 
 
 class Invitation(models.Model):
-    event = models.ManyToManyField(Event, related_name="event_invitations")
-    user = models.ManyToManyField(User, related_name="event_invitations")
+    event = models.ForeignKey(Event, related_name="event_invitations", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="event_invitations", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         print(self.event)
-        return '{} || {}'.format(self.event, self.user)
+        return '{} || {}'.format(self.event.event_name, self.user.username)
