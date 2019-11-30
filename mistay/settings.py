@@ -24,7 +24,7 @@ SECRET_KEY = '+en*71#np4pjeqa82+3-*axs=^b6^s-egtc^pd(qq#51ce^sut'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://mistay-events.herokuapp.com/', 'mistay-events.herokuapp.com', '0.0.0.0:80']
+ALLOWED_HOSTS = ['https://mistay-events.herokuapp.com/', 'mistay-events.herokuapp.com', '0.0.0.0:80', '127.0.0.1']
 
 # Application definition
 
@@ -44,8 +44,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -137,7 +137,7 @@ STATICFILES_DIRS = (
 )
 
 #  Add configuration for static files storage using whitenoise
-STATICFILES_STORAGE = 'whitenoise.django.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 import dj_database_url
 
