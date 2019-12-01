@@ -91,6 +91,38 @@ class EventCreateAPIView(APIView):
         return Response(serializer.data)
 
 
+class EventDeleteAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
+    def post(self, request, format=None):
+        user_id = self.request.user.id
+        request_data = self.request.data
+
+        try:
+            event_id = request_data['event_id']
+
+            if is_not_a_owner_of_the_event(
+                    event_id=event_id, user_id=user_id):
+                response = {
+                    "details": "Only Event Owner Can Delete."
+                }
+                return Response(response, status=400)
+
+            Event.objects.get(id=event_id).delete()
+
+            return Response(
+                {"details": "Successfully Deleted"}, status=200
+            )
+
+        except KeyError:
+            response = {
+                "details": "You should provide all"
+                           " sufficient information to register"
+            }
+            return Response(response, status=400)
+
+
 class RegisterForEventAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JSONWebTokenAuthentication]
@@ -167,7 +199,7 @@ class InviteForEventAPIView(APIView):
         try:
             event_id = request_data['event_id']
 
-            if self.is_not_authorized_to_invite(
+            if is_not_a_owner_of_the_event(
                     event_id=event_id, user_id=user_id):
                 response = {
                     "details": "Only Event Owner Can Send Invitation."
@@ -187,12 +219,12 @@ class InviteForEventAPIView(APIView):
             }
             return Response(response, status=400)
 
-    @staticmethod
-    def is_not_authorized_to_invite(event_id, user_id):
-        is_not_owner = not Event.objects.filter(
-            id=event_id, user_id=user_id).exists()
 
-        return is_not_owner
+def is_not_a_owner_of_the_event(event_id, user_id):
+    is_not_owner = not Event.objects.filter(
+        id=event_id, user_id=user_id).exists()
+
+    return is_not_owner
 
 
 class RegisteredEventsAPIView(APIView):
