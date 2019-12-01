@@ -25,10 +25,7 @@ SECRET_KEY = '+en*71#np4pjeqa82+3-*axs=^b6^s-egtc^pd(qq#51ce^sut'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'https://mistay-events.herokuapp.com/', 'mistay-events.herokuapp.com',
-    '0.0.0.0:80', '127.0.0.1', 'localhost',
-    'https://events.therkv.tech',
-    'mistay-events.herokuapp.com'
+    '*'
 ]
 
 # Application definition
