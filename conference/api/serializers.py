@@ -44,3 +44,15 @@ class RegisteredSerializer(serializers.ModelSerializer):
             'event',
             'created_at'
         ]
+
+
+class RegisteredEventsSerializer(serializers.ModelSerializer):
+    event = EventSerializer(read_only=True)
+
+    class Meta:
+        model = RegisterEvent
+        fields = [
+            'user',
+            'event',
+            'created_at'
+        ]

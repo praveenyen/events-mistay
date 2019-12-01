@@ -9,7 +9,7 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from ..models import Event, Invitation, RegisterEvent
 from .serializers import EventSerializer, InvitationSerializer, \
-    RegisteredSerializer, UserSerializer
+    RegisteredSerializer, UserSerializer, RegisteredEventsSerializer
 
 
 class UserRegistration(APIView):
@@ -156,6 +156,92 @@ class RegisterForEventAPIView(APIView):
         return False
 
 
+class InviteForEventAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
+    def post(self, request, format=None):
+        user_id = self.request.user.id
+        request_data = self.request.data
+
+        try:
+            event_id = request_data['event_id']
+
+            if self.is_not_authorized_to_invite(
+                    event_id=event_id, user_id=user_id):
+                response = {
+                    "details": "Only Event Owner Can Send Invitation."
+                }
+                return Response(response, status=400)
+
+            Invitation.objects.get_or_create(event_id=event_id, user_id=user_id)
+
+            return Response(
+                {"details": "Successfully Invited"}, status=200
+            )
+
+        except KeyError:
+            response = {
+                "details": "You should provide all"
+                           " sufficient information to register"
+            }
+            return Response(response, status=400)
+
+    @staticmethod
+    def is_not_authorized_to_invite(event_id, user_id):
+        is_not_owner = not Event.objects.filter(
+            id=event_id, user_id=user_id).exists()
+
+        return is_not_owner
+
+
+class RegisteredEventsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
+    def get(self, request, format=None):
+        req_user_id = self.request.user.id
+
+        qs = RegisterEvent.objects.filter(user_id=req_user_id).select_related(
+            'event'
+        )
+
+        serializer = RegisteredEventsSerializer(qs, many=True)
+
+        return Response(serializer.data)
+
+
+class UnRegisterForEventAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
+    def post(self, request, format=None):
+        user_id = self.request.user.id
+        request_data = self.request.data
+
+        try:
+            event_id = request_data['event_id']
+        except KeyError:
+            response = {
+                "details": "You should provide all"
+                           " sufficient information to register"
+            }
+            return Response(response, status=400)
+        try:
+            RegisterEvent.objects.get(
+                event_id=event_id, user_id=user_id).delete()
+        except:
+            response = {
+                "details": "You have already un-registered for the event."
+            }
+            return Response(response, status=404)
+
+        response = {
+            "details": "You have un-registered for the event."
+        }
+        return Response(response, status=200)
+
+
 class InvitationAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JSONWebTokenAuthentication]
@@ -171,16 +257,17 @@ class InvitationAPIView(generics.ListAPIView):
         return qs
 
 
-class InvitationDetailsView(generics.RetrieveAPIView):
-    permission_classes = []
-    authentication_classes = []
-    queryset = Invitation.objects.all()
-    serializer_class = InvitationSerializer
-
-    def get_object(self):
-        kwargs = self.kwargs
-        kw_id = kwargs.get('pk')
-        return Invitation.objects.get(id=kw_id.split('/')[1])
+#
+# class InvitationDetailsView(generics.RetrieveAPIView):
+#     permission_classes = []
+#     authentication_classes = []
+#     queryset = Invitation.objects.all()
+#     serializer_class = InvitationSerializer
+#
+#     def get_object(self):
+#         kwargs = self.kwargs
+#         kw_id = kwargs.get('pk')
+#         return Invitation.objects.get(id=kw_id.split('/')[1])
 
 
 class RegisteredAPIView(generics.ListAPIView):

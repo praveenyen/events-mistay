@@ -16,14 +16,18 @@ class Event(models.Model):
 
 
 class RegisterEvent(models.Model):
-    user = models.ForeignKey(User, related_name="registered_events", on_delete=None)
-    event = models.ForeignKey(Event, related_name="registered", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="registered_events",
+                             on_delete=None)
+    event = models.ForeignKey(Event, related_name="registered",
+                              on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Invitation(models.Model):
-    event = models.ForeignKey(Event, related_name="event_invitations", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="event_invitations", on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, related_name="event_invitations",
+                              on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="event_invitations",
+                             on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
