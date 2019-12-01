@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
@@ -69,7 +70,7 @@ class PublicEventsAPIView(APIView):
 
 class EventCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [JSONWebTokenAuthentication]
 
     def post(self, request, format=None):
         user_id = self.request.user.id
@@ -90,15 +91,38 @@ class EventCreateAPIView(APIView):
         return Response(serializer.data)
 
 
-class RegisterEventAPIView(APIView):
+class RegisterForEventAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [JSONWebTokenAuthentication]
 
     def post(self, request, format=None):
         user_id = self.request.user.id
         request_data = self.request.data
 
-        event_id = request_data['event_id']
+        try:
+            event_id = request_data['event_id']
+            event = Event.objects.get(id=event_id)
+
+            if self.is_seats_not_available(event):
+                response = {
+                    "details": "All seats are occupied, Try Next event."
+                }
+                return Response(response, status=400)
+
+            is_overlapping = self.is_overlapping(
+                user_id=user_id, event=event)
+            if is_overlapping:
+                response = {
+                    "details": "This event is overlapping "
+                               "with your registered events."
+                }
+                return Response(response, status=400)
+        except KeyError:
+            response = {
+                "details": "You should provide all"
+                           " sufficient information to register"
+            }
+            return Response(response, status=400)
 
         qs = RegisterEvent.objects.create(
             user_id=user_id, event_id=event_id
@@ -107,10 +131,34 @@ class RegisterEventAPIView(APIView):
         serializer = RegisteredSerializer(qs)
         return Response(serializer.data)
 
+    @staticmethod
+    def is_seats_not_available(event):
+        registered_users_count = RegisterEvent.objects.filter(
+            event=event).count()
+        if registered_users_count < event.users_limit:
+            return False
+        return True
+
+    @staticmethod
+    def is_overlapping(user_id, event):
+        not_overlapping_count = RegisterEvent.objects.filter(
+            Q(event__starts_on__gte=event.starts_on) | Q(
+                event__ends_on__lt=event.ends_on),
+            user_id=user_id
+        ).count()
+        all_registered_events_count = RegisterEvent.objects.filter(
+            user_id=user_id).count()
+
+        if all_registered_events_count == 0:
+            return False
+        if not_overlapping_count == all_registered_events_count:
+            return True
+        return False
+
 
 class InvitationAPIView(generics.ListAPIView):
-    permission_classes = []
-    authentication_classes = [SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
     serializer_class = InvitationSerializer
 
     def get_queryset(self):
