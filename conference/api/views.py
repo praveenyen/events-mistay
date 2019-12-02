@@ -55,6 +55,19 @@ class MyEventsAPIView(APIView):
         return Response(serializer.data)
 
 
+class InvitedEventsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
+    def get(self, request, format=None):
+        req_user_id = self.request.user.id
+
+        qs = Event.objects.filter(event_invitations__user_id=req_user_id)
+        serializer = EventSerializer(qs, many=True)
+
+        return Response(serializer.data)
+
+
 class PublicEventsAPIView(APIView):
     permission_classes = []
     authentication_classes = []
@@ -287,23 +300,3 @@ class InvitationAPIView(generics.ListAPIView):
         if query is not None:
             qs = qs.filter(event__event_name__icontains=query)
         return qs
-
-
-#
-# class InvitationDetailsView(generics.RetrieveAPIView):
-#     permission_classes = []
-#     authentication_classes = []
-#     queryset = Invitation.objects.all()
-#     serializer_class = InvitationSerializer
-#
-#     def get_object(self):
-#         kwargs = self.kwargs
-#         kw_id = kwargs.get('pk')
-#         return Invitation.objects.get(id=kw_id.split('/')[1])
-
-
-class RegisteredAPIView(generics.ListAPIView):
-    permission_classes = []
-    authentication_classes = []
-    queryset = RegisterEvent.objects.all()
-    serializer_class = RegisteredSerializer
